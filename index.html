@@ -4,7 +4,8 @@
 <meta charset="UTF-8">
 <title>Заявление на отпуск</title>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/docx/8.5.0/docx.min.js"></script>
+<!-- Библиотеки -->
+<script src="https://unpkg.com/docx@8.5.0/build/index.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 
 <style>
@@ -19,8 +20,8 @@ body{
   margin:auto;
   background:white;
   padding:20px;
-  border-radius:8px;
-  box-shadow:0 4px 12px rgba(0,0,0,0.08);
+  border-radius:10px;
+  box-shadow:0 6px 18px rgba(0,0,0,0.08);
 }
 
 h2{
@@ -38,18 +39,18 @@ select,input{
   padding:8px;
   margin-top:5px;
   border:1px solid #ccc;
-  border-radius:4px;
+  border-radius:6px;
   font-size:14px;
 }
 
 button{
   margin-top:20px;
   width:100%;
-  padding:10px;
+  padding:11px;
   background:#2d6cdf;
   color:white;
   border:none;
-  border-radius:6px;
+  border-radius:8px;
   font-size:15px;
   cursor:pointer;
 }
@@ -84,11 +85,14 @@ button:hover{
 
 <div class="error" id="error"></div>
 
-<button onclick="generateDoc()">Скачать заявление</button>
+<button id="downloadBtn">Скачать заявление</button>
 
 </div>
 
 <script>
+
+const { Document, Packer, Paragraph, TextRun, AlignmentType } = docx;
+
 function formatDate(date){
   const months = [
     "января","февраля","марта","апреля","мая","июня",
@@ -102,9 +106,7 @@ function calculateDays(start, end){
   return Math.floor(diff / (1000 * 60 * 60 * 24)) + 1;
 }
 
-function generateDoc(){
-
-  const { Document, Packer, Paragraph, TextRun, AlignmentType } = docx;
+document.getElementById("downloadBtn").addEventListener("click", function(){
 
   const type = document.getElementById("type").value;
   const startValue = document.getElementById("start").value;
@@ -142,42 +144,43 @@ function generateDoc(){
 
   const doc = new Document({
     sections: [{
-      properties:{},
       children: [
 
-        // Шапка справа (пустая для заполнения)
+        // Шапка справа
         new Paragraph({
-          children: [new TextRun("Кому: ____________________________")],
+          children:[new TextRun("Кому: ____________________________")],
           alignment: AlignmentType.RIGHT
         }),
         new Paragraph({
-          children: [new TextRun("От: ______________________________")],
+          children:[new TextRun("От: ______________________________")],
           alignment: AlignmentType.RIGHT
         }),
 
-        new Paragraph({ text:"", spacing:{after:300} }),
+        new Paragraph({ text:"" }),
+        new Paragraph({ text:"" }),
 
         // Заголовок
         new Paragraph({
-          children: [new TextRun({ text:"ЗАЯВЛЕНИЕ", bold:true })],
+          children:[new TextRun({ text:"ЗАЯВЛЕНИЕ", bold:true })],
           alignment: AlignmentType.CENTER
         }),
 
-        new Paragraph({ text:"", spacing:{after:300} }),
+        new Paragraph({ text:"" }),
+        new Paragraph({ text:"" }),
 
         // Основной текст
         new Paragraph({
-          children: [new TextRun(text)],
-          spacing:{after:400}
+          children:[new TextRun(text)]
         }),
+
+        new Paragraph({ text:"" }),
+        new Paragraph({ text:"" }),
 
         // Дата и подпись
         new Paragraph({
-          children: [
+          children:[
             new TextRun(todayFormatted),
-            new TextRun({
-              text:"\t\t\t\tПодпись __________",
-            })
+            new TextRun("\t\t\t\tПодпись __________")
           ]
         })
 
@@ -189,7 +192,8 @@ function generateDoc(){
     saveAs(blob, "Заявление_на_отпуск.docx");
   });
 
-}
+});
+
 </script>
 
 </body>
