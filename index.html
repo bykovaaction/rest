@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <title>Заявление на отпуск</title>
 
-<!-- Стабильный UMD-бандл docx -->
+<!-- UMD-бандл docx -->
 <script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/docx.umd.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
 
@@ -90,7 +90,8 @@ button:hover{
 </div>
 
 <script>
-const { Document, Packer, Paragraph, TextRun, AlignmentType } = docx;
+const docxLib = window.docx; // используем глобальный объект docx
+const { Document, Packer, Paragraph, TextRun, AlignmentType } = docxLib;
 
 function formatDate(date){
   const months = [
@@ -144,8 +145,6 @@ document.getElementById("downloadBtn").addEventListener("click", function(){
   const doc = new Document({
     sections: [{
       children: [
-
-        // Шапка справа (для заполнения в Word)
         new Paragraph({
           children:[new TextRun("Кому: ____________________________")],
           alignment: AlignmentType.RIGHT
@@ -154,35 +153,25 @@ document.getElementById("downloadBtn").addEventListener("click", function(){
           children:[new TextRun("От: ______________________________")],
           alignment: AlignmentType.RIGHT
         }),
-
         new Paragraph({ text:"" }),
         new Paragraph({ text:"" }),
-
-        // Заголовок
         new Paragraph({
           children:[new TextRun({ text:"ЗАЯВЛЕНИЕ", bold:true })],
           alignment: AlignmentType.CENTER
         }),
-
         new Paragraph({ text:"" }),
         new Paragraph({ text:"" }),
-
-        // Основной текст
         new Paragraph({
           children:[new TextRun(text)]
         }),
-
         new Paragraph({ text:"" }),
         new Paragraph({ text:"" }),
-
-        // Дата и подпись
         new Paragraph({
           children:[
             new TextRun(todayFormatted),
             new TextRun("\t\t\t\tПодпись __________")
           ]
         })
-
       ]
     }]
   });
