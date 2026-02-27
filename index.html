@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Заявление на отпуск</title>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/docx/8.5.0/docx.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+
+<style>
+body{
+  font-family: Arial, sans-serif;
+  background:#f4f6f8;
+  padding:20px;
+}
+
+.container{
+  max-width:600px;
+  margin:auto;
+  background:white;
+  padding:20px;
+  border-radius:8px;
+  box-shadow:0 4px 12px rgba(0,0,0,0.08);
+}
+
+h2{
+  margin-top:0;
+}
+
+label{
+  display:block;
+  margin-top:15px;
+  font-weight:bold;
+}
+
+select,input{
+  width:100%;
+  padding:8px;
+  margin-top:5px;
+  border:1px solid #ccc;
+  border-radius:4px;
+  font-size:14px;
+}
+
+button{
+  margin-top:20px;
+  width:100%;
+  padding:10px;
+  background:#2d6cdf;
+  color:white;
+  border:none;
+  border-radius:6px;
+  font-size:15px;
+  cursor:pointer;
+}
+
+button:hover{
+  background:#1f54b5;
+}
+
+.error{
+  color:red;
+  margin-top:10px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+<h2>Сформировать заявление на отпуск</h2>
+
+<label>Тип отпуска</label>
+<select id="type">
+  <option value="paid">Ежегодный оплачиваемый отпуск</option>
+  <option value="unpaid">Отпуск без сохранения заработной платы</option>
+</select>
+
+<label>Дата начала отпуска</label>
+<input type="date" id="start">
+
+<label>Дата окончания отпуска</label>
+<input type="date" id="end">
+
+<div class="error" id="error"></div>
+
+<button onclick="generateDoc()">Скачать заявление</button>
+
+</div>
+
+<script>
+function formatDate(date){
+  const months = [
+    "января","февраля","марта","апреля","мая","июня",
+    "июля","августа","сентября","октября","ноября","декабря"
+  ];
+  return date.getDate() + " " + months[date.getMonth()] + " " + date.getFullYear() + " г.";
+}
+
+function calculateDays(start, end){
+  const diff = end - start;
+  return Math.floor(diff / (1000 * 60 * 60 * 24)) + 1;
+}
+
+function generateDoc(){
+
+  const { Document, Packer, Paragraph, TextRun, AlignmentType } = docx;
+
+  const type = document.getElementById("type").value;
+  const startValue = document.getElementById("start").value;
+  const endValue = document.getElementById("end").value;
+  const errorDiv = document.getElementById("error");
+
+  errorDiv.innerText = "";
+
+  if(!startValue || !endValue){
+    errorDiv.innerText = "Пожалуйста, заполните даты.";
+    return;
+  }
+
+  const startDate = new Date(startValue);
+  const endDate = new Date(endValue);
+
+  if(endDate < startDate){
+    errorDiv.innerText = "Дата окончания не может быть раньше даты начала.";
+    return;
+  }
+
+  const days = calculateDays(startDate, endDate);
+
+  const formattedStart = formatDate(startDate);
+  const formattedEnd = formatDate(endDate);
+  const todayFormatted = formatDate(new Date());
+
+  let text;
+
+  if(type === "paid"){
+    text = `Прошу предоставить мне ежегодный оплачиваемый отпуск с ${formattedStart} по ${formattedEnd} продолжительностью ${days} календарных дней.`;
+  } else {
+    text = `Прошу предоставить мне отпуск без сохранения заработной платы с ${formattedStart} по ${formattedEnd} продолжительностью ${days} календарных дней.`;
+  }
+
+  const doc = new Document({
+    sections: [{
+      properties:{},
+      children: [
+
+        // Шапка справа (пустая для заполнения)
+        new Paragraph({
+          children: [new TextRun("Кому: ____________________________")],
+          alignment: AlignmentType.RIGHT
+        }),
+        new Paragraph({
+          children: [new TextRun("От: ______________________________")],
+          alignment: AlignmentType.RIGHT
+        }),
+
+        new Paragraph({ text:"", spacing:{after:300} }),
+
+        // Заголовок
+        new Paragraph({
+          children: [new TextRun({ text:"ЗАЯВЛЕНИЕ", bold:true })],
+          alignment: AlignmentType.CENTER
+        }),
+
+        new Paragraph({ text:"", spacing:{after:300} }),
+
+        // Основной текст
+        new Paragraph({
+          children: [new TextRun(text)],
+          spacing:{after:400}
+        }),
+
+        // Дата и подпись
+        new Paragraph({
+          children: [
+            new TextRun(todayFormatted),
+            new TextRun({
+              text:"\t\t\t\tПодпись __________",
+            })
+          ]
+        })
+
+      ]
+    }]
+  });
+
+  Packer.toBlob(doc).then(blob=>{
+    saveAs(blob, "Заявление_на_отпуск.docx");
+  });
+
+}
+</script>
+
+</body>
+</html>
