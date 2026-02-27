@@ -4,9 +4,9 @@
 <meta charset="UTF-8">
 <title>Заявление на отпуск</title>
 
-<!-- Библиотеки -->
-<script src="https://unpkg.com/docx@8.5.0/build/index.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+<!-- Стабильные CDN библиотеки -->
+<script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
 
 <style>
 body{
@@ -90,7 +90,6 @@ button:hover{
 </div>
 
 <script>
-
 const { Document, Packer, Paragraph, TextRun, AlignmentType } = docx;
 
 function formatDate(date){
@@ -146,7 +145,7 @@ document.getElementById("downloadBtn").addEventListener("click", function(){
     sections: [{
       children: [
 
-        // Шапка справа
+        // Шапка справа (для заполнения в Word)
         new Paragraph({
           children:[new TextRun("Кому: ____________________________")],
           alignment: AlignmentType.RIGHT
@@ -193,7 +192,6 @@ document.getElementById("downloadBtn").addEventListener("click", function(){
   });
 
 });
-
 </script>
 
 </body>
