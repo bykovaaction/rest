@@ -13,7 +13,7 @@ body {
 }
 
 .container {
-    max-width: 500px;
+    max-width: 520px;
     margin: 0 auto;
     background: #ffffff;
     padding: 30px;
@@ -83,12 +83,12 @@ button:hover {
 <button onclick="generateDoc()">Скачать заявление</button>
 
 <div class="note">
-Данные сотрудника и адресата вы заполните самостоятельно в документе.
+Шапку (кому и от кого) вы заполните самостоятельно в документе.
 </div>
 </div>
 
-<!-- Правильное подключение docx -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/docx/8.5.0/docx.umd.js"></script>
+<!-- СТАБИЛЬНОЕ подключение docx -->
+<script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js"></script>
 
 <script>
 function formatDate(date) {
@@ -107,7 +107,7 @@ function calculateDays(start, end) {
 async function generateDoc() {
 
     if (!window.docx) {
-        alert("Библиотека docx не загрузилась. Обновите страницу.");
+        alert("Библиотека docx не загрузилась. Попробуйте обновить страницу.");
         return;
     }
 
@@ -139,7 +139,6 @@ async function generateDoc() {
 
     const doc = new Document({
         sections: [{
-            properties: {},
             children: [
 
                 // Шапка справа
@@ -201,14 +200,11 @@ async function generateDoc() {
     });
 
     const blob = await Packer.toBlob(doc);
-    const url = URL.createObjectURL(blob);
 
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "Заявление_на_отпуск.docx";
-    a.click();
-
-    URL.revokeObjectURL(url);
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "Заявление_на_отпуск.docx";
+    link.click();
 }
 </script>
 
