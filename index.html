@@ -3,184 +3,213 @@
 <head>
 <meta charset="UTF-8">
 <title>Заявление на отпуск</title>
-
-<!-- UMD-бандл docx -->
-<script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/docx.umd.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-body{
-  font-family: Arial, sans-serif;
-  background:#f4f6f8;
-  padding:20px;
+body {
+    font-family: Arial, sans-serif;
+    background: #f4f6f8;
+    padding: 40px 20px;
 }
 
-.container{
-  max-width:600px;
-  margin:auto;
-  background:white;
-  padding:20px;
-  border-radius:10px;
-  box-shadow:0 6px 18px rgba(0,0,0,0.08);
+.container {
+    max-width: 500px;
+    margin: 0 auto;
+    background: #ffffff;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.08);
 }
 
-h2{
-  margin-top:0;
+h2 {
+    margin-bottom: 25px;
 }
 
-label{
-  display:block;
-  margin-top:15px;
-  font-weight:bold;
+label {
+    display: block;
+    margin-top: 15px;
+    margin-bottom: 5px;
+    font-weight: 600;
 }
 
-select,input{
-  width:100%;
-  padding:8px;
-  margin-top:5px;
-  border:1px solid #ccc;
-  border-radius:6px;
-  font-size:14px;
+select, input {
+    width: 100%;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    font-size: 14px;
 }
 
-button{
-  margin-top:20px;
-  width:100%;
-  padding:11px;
-  background:#2d6cdf;
-  color:white;
-  border:none;
-  border-radius:8px;
-  font-size:15px;
-  cursor:pointer;
+button {
+    margin-top: 25px;
+    width: 100%;
+    padding: 12px;
+    background: #2e7dff;
+    border: none;
+    color: white;
+    font-size: 15px;
+    border-radius: 8px;
+    cursor: pointer;
 }
 
-button:hover{
-  background:#1f54b5;
+button:hover {
+    background: #1f5fd6;
 }
 
-.error{
-  color:red;
-  margin-top:10px;
+.note {
+    font-size: 13px;
+    color: #666;
+    margin-top: 10px;
 }
 </style>
 </head>
-
 <body>
 
 <div class="container">
 <h2>Сформировать заявление на отпуск</h2>
 
-<label>Тип отпуска</label>
+<label>Вид отпуска</label>
 <select id="type">
-  <option value="paid">Ежегодный оплачиваемый отпуск</option>
-  <option value="unpaid">Отпуск без сохранения заработной платы</option>
+<option value="paid">Ежегодный оплачиваемый отпуск</option>
+<option value="unpaid">Отпуск без сохранения заработной платы</option>
 </select>
 
-<label>Дата начала отпуска</label>
+<label>Дата начала</label>
 <input type="date" id="start">
 
-<label>Дата окончания отпуска</label>
+<label>Дата окончания</label>
 <input type="date" id="end">
 
-<div class="error" id="error"></div>
+<button onclick="generateDoc()">Скачать заявление</button>
 
-<button id="downloadBtn">Скачать заявление</button>
-
+<div class="note">
+Данные сотрудника и адресата вы заполните самостоятельно в документе.
+</div>
 </div>
 
+<!-- Правильное подключение docx -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/docx/8.5.0/docx.umd.js"></script>
+
 <script>
-const docxLib = window.docx; // используем глобальный объект docx
-const { Document, Packer, Paragraph, TextRun, AlignmentType } = docxLib;
-
-function formatDate(date){
-  const months = [
-    "января","февраля","марта","апреля","мая","июня",
-    "июля","августа","сентября","октября","ноября","декабря"
-  ];
-  return date.getDate() + " " + months[date.getMonth()] + " " + date.getFullYear() + " г.";
+function formatDate(date) {
+    const months = [
+        "января","февраля","марта","апреля","мая","июня",
+        "июля","августа","сентября","октября","ноября","декабря"
+    ];
+    return date.getDate() + " " + months[date.getMonth()] + " " + date.getFullYear() + " г.";
 }
 
-function calculateDays(start, end){
-  const diff = end - start;
-  return Math.floor(diff / (1000 * 60 * 60 * 24)) + 1;
+function calculateDays(start, end) {
+    const diff = end - start;
+    return Math.floor(diff / (1000 * 60 * 60 * 24)) + 1;
 }
 
-document.getElementById("downloadBtn").addEventListener("click", function(){
+async function generateDoc() {
 
-  const type = document.getElementById("type").value;
-  const startValue = document.getElementById("start").value;
-  const endValue = document.getElementById("end").value;
-  const errorDiv = document.getElementById("error");
+    if (!window.docx) {
+        alert("Библиотека docx не загрузилась. Обновите страницу.");
+        return;
+    }
 
-  errorDiv.innerText = "";
+    const { Document, Packer, Paragraph, TextRun, AlignmentType } = window.docx;
 
-  if(!startValue || !endValue){
-    errorDiv.innerText = "Пожалуйста, заполните даты.";
-    return;
-  }
+    const type = document.getElementById("type").value;
+    const startValue = document.getElementById("start").value;
+    const endValue = document.getElementById("end").value;
 
-  const startDate = new Date(startValue);
-  const endDate = new Date(endValue);
+    if (!startValue || !endValue) {
+        alert("Пожалуйста, заполните даты.");
+        return;
+    }
 
-  if(endDate < startDate){
-    errorDiv.innerText = "Дата окончания не может быть раньше даты начала.";
-    return;
-  }
+    const startDate = new Date(startValue);
+    const endDate = new Date(endValue);
 
-  const days = calculateDays(startDate, endDate);
+    if (endDate < startDate) {
+        alert("Дата окончания не может быть раньше даты начала.");
+        return;
+    }
 
-  const formattedStart = formatDate(startDate);
-  const formattedEnd = formatDate(endDate);
-  const todayFormatted = formatDate(new Date());
+    const days = calculateDays(startDate, endDate);
+    const today = new Date();
 
-  let text;
+    const leaveText = type === "paid"
+        ? "ежегодный оплачиваемый отпуск"
+        : "отпуск без сохранения заработной платы";
 
-  if(type === "paid"){
-    text = `Прошу предоставить мне ежегодный оплачиваемый отпуск с ${formattedStart} по ${formattedEnd} продолжительностью ${days} календарных дней.`;
-  } else {
-    text = `Прошу предоставить мне отпуск без сохранения заработной платы с ${formattedStart} по ${formattedEnd} продолжительностью ${days} календарных дней.`;
-  }
+    const doc = new Document({
+        sections: [{
+            properties: {},
+            children: [
 
-  const doc = new Document({
-    sections: [{
-      children: [
-        new Paragraph({
-          children:[new TextRun("Кому: ____________________________")],
-          alignment: AlignmentType.RIGHT
-        }),
-        new Paragraph({
-          children:[new TextRun("От: ______________________________")],
-          alignment: AlignmentType.RIGHT
-        }),
-        new Paragraph({ text:"" }),
-        new Paragraph({ text:"" }),
-        new Paragraph({
-          children:[new TextRun({ text:"ЗАЯВЛЕНИЕ", bold:true })],
-          alignment: AlignmentType.CENTER
-        }),
-        new Paragraph({ text:"" }),
-        new Paragraph({ text:"" }),
-        new Paragraph({
-          children:[new TextRun(text)]
-        }),
-        new Paragraph({ text:"" }),
-        new Paragraph({ text:"" }),
-        new Paragraph({
-          children:[
-            new TextRun(todayFormatted),
-            new TextRun("\t\t\t\tПодпись __________")
-          ]
-        })
-      ]
-    }]
-  });
+                // Шапка справа
+                new Paragraph({
+                    alignment: AlignmentType.RIGHT,
+                    children: [new TextRun("Руководителю ____________________")]
+                }),
+                new Paragraph({
+                    alignment: AlignmentType.RIGHT,
+                    children: [new TextRun("от ______________________________")]
+                }),
 
-  Packer.toBlob(doc).then(blob=>{
-    saveAs(blob, "Заявление_на_отпуск.docx");
-  });
+                new Paragraph({ text: "" }),
 
-});
+                // Заголовок
+                new Paragraph({
+                    alignment: AlignmentType.CENTER,
+                    children: [
+                        new TextRun({
+                            text: "ЗАЯВЛЕНИЕ",
+                            bold: true,
+                            size: 32
+                        })
+                    ]
+                }),
+
+                new Paragraph({ text: "" }),
+
+                // Основной текст
+                new Paragraph({
+                    children: [
+                        new TextRun(
+                            "Прошу предоставить мне " + leaveText +
+                            " продолжительностью " + days +
+                            " календарных дней с " +
+                            formatDate(startDate) + " по " +
+                            formatDate(endDate) + "."
+                        )
+                    ]
+                }),
+
+                new Paragraph({ text: "" }),
+                new Paragraph({ text: "" }),
+
+                // Дата
+                new Paragraph({
+                    children: [
+                        new TextRun(formatDate(today))
+                    ]
+                }),
+
+                new Paragraph({
+                    children: [
+                        new TextRun("Подпись ____________________")
+                    ]
+                })
+            ]
+        }]
+    });
+
+    const blob = await Packer.toBlob(doc);
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "Заявление_на_отпуск.docx";
+    a.click();
+
+    URL.revokeObjectURL(url);
+}
 </script>
 
 </body>
